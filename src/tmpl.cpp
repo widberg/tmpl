@@ -1,21 +1,5 @@
 #include "tmpl.hpp"
 
-#include <filesystem>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-typedef std::unordered_map<std::string, std::string> macro_map_t;
-typedef std::vector<std::string> arg_vector_t;
-
-int replace(const std::filesystem::path& template_path, const std::filesystem::path& output_path, const std::tm* time, const macro_map_t& macros, const arg_vector_t& args);
-int replace_stream(std::istream& template_path, std::ostream& output_path, const std::tm* time, const macro_map_t& macros, const arg_vector_t& args);
-std::filesystem::path reparent_path(const std::filesystem::path& path, const std::filesystem::path& old_root, const std::filesystem::path& new_root);
-
 int main(int argc, char* argv[])
 {
 	if (argc < 3)
@@ -24,21 +8,46 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	const std::filesystem::path template_path(argv[1]);
+	const std::filesystem::path output_path(argv[2]);
+
 	// Setup replacement values
+
+	// Default macros
+	macro_map_t macros = {
+		{ "TEMPLATE_ARGUMENT", argv[1] },
+		{ "OUTPUT_ARGUMENT", argv[2] },
+		{ "WORKING_DIRECTORY", std::filesystem::current_path().string() },
+		{ "$", "$" } // Escape sequence
+	};
+
+	// Add args
+	for (int i = 3; i < argc; i++)
+	{
+		macros.insert(std::make_pair<std::string, std::string>(std::to_string(i - 3), argv[i]));
+	}
+
+	// Add times
 	const std::time_t t = std::time(nullptr);
 	const std::tm* time = std::localtime(&t);
 
-	const macro_map_t macros = {
-		{ "TEMPLATE", argv[1] },
-		{ "OUTPUT", argv[2] }
-	};
+	const char time_format_specifiers[] = "aAbBcCdDeFgGhHIjmMprRSTuUVwWxXyYzZ";
+	const int time_format_specifiers_size = sizeof(time_format_specifiers) / sizeof(char);
 
-	const arg_vector_t args(argv + 3, argv + argc);
+	std::string format_string("%_");
+	for (int i = 0; i < time_format_specifiers_size; i++)
+	{
+		char time_format_specifier = time_format_specifiers[i];
+		std::stringstream buffer;
+		format_string[1] = time_format_specifier;
+		buffer << std::put_time(time, format_string.c_str());
+		macros.insert(std::make_pair<std::string, std::string>(std::string(1, time_format_specifier), buffer.str()));
+	}
 
-	return replace(argv[1], argv[2], time, macros, args);
+	return replace(template_path, output_path, macros);
 }
 
-int replace(const std::filesystem::path& template_path, const std::filesystem::path& output_path, const std::tm* time, const macro_map_t& macros, const arg_vector_t& args)
+int replace(const std::filesystem::path& template_path, const std::filesystem::path& output_path, macro_map_t& macros)
 {
 	bool directory_mode = false;
 	std::ifstream template_file;
@@ -66,20 +75,24 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 
 	// Output file
 
+	std::filesystem::path new_output_path(replace_string(output_path.string(), macros));
+
 	if (directory_mode)
 	{
-		if (std::filesystem::exists(output_path))
+
+
+		if (!std::filesystem::is_directory(new_output_path) && std::filesystem::exists(new_output_path))
 		{
-			std::cerr << "Output path must not exist in directory mode" << std::endl;
+			std::cerr << "Output path must be a directory or not exist in directory mode" << std::endl;
 			return 1;
 		}
 	}
 	else
 	{
-		output_file.open(output_path, std::ios::binary);
+		output_file.open(new_output_path, std::ios::binary);
 		if (output_file.fail())
 		{
-			std::cerr << "Could not open output file " << output_path << std::endl;
+			std::cerr << "Could not open output file " << new_output_path << std::endl;
 			template_file.close();
 			return 1;
 		}
@@ -90,7 +103,7 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 		std::filesystem::directory_iterator end_itr;
 		for (std::filesystem::directory_iterator itr(template_path); itr != end_itr; ++itr)
 		{
-			status = replace(itr->path(), reparent_path(itr->path(), template_path, output_path), time, macros, args);
+			status = replace(itr->path(), new_output_path / itr->path().stem(), macros);
 			if (status != 0)
 			{
 				break;
@@ -99,7 +112,7 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 	}
 	else
 	{
-		status = replace_stream(template_file, output_file, time, macros, args);
+		status = replace_stream(template_file, output_file, macros);
 
 		template_file.close();
 		output_file.close();
@@ -108,7 +121,7 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 	return status;
 }
 
-int replace_stream(std::istream& template_stream, std::ostream& output_stream, const std::tm* time, const macro_map_t& macros, const arg_vector_t& args)
+int replace_stream(std::istream& template_stream, std::ostream& output_stream, const macro_map_t& macros)
 {
 	char c;
 
@@ -119,11 +132,9 @@ int replace_stream(std::istream& template_stream, std::ostream& output_stream, c
 			char next_char;
 			template_stream.get(next_char);
 
-			if (next_char == '$')
-			{
-				output_stream << "$";
-			}
-			else if (next_char == '(')
+			std::string char_as_string(1, next_char);
+
+			if (next_char == '(')
 			{
 				std::string token;
 
@@ -149,31 +160,46 @@ int replace_stream(std::istream& template_stream, std::ostream& output_stream, c
 					return 1;
 				}
 
-				if (!token.empty() && std::isdigit(token[0]))
-				{
-					int arg_index = std::stoi(token);
-
-					if (arg_index < 0 || arg_index >= args.size())
-					{
-						std::cerr << "Invalid macro token: arg index out of range" << std::endl;
-						return 1;
-					}
-
-					output_stream << args.at(arg_index);
-				}
-				else if (!token.empty() && macros.count(token))
+				if (!token.empty() && macros.count(token))
 				{
 					output_stream << macros.at(token);
-				}
-				else if (!token.empty())
-				{
-					output_stream << std::put_time(time, token.c_str());
 				}
 				else
 				{
 					std::cerr << "Invalid macro token" << std::endl;
 					return 1;
 				}
+			}
+			else if (std::isdigit(next_char))
+			{
+				std::string token;
+				token.push_back(next_char);
+
+				char token_char;
+
+				while (template_stream.get(token_char) && !template_stream.eof() && std::isdigit(token_char))
+				{
+					token.push_back(token_char);
+				}
+
+				if (macros.count(token))
+				{
+					output_stream << macros.at(token);
+				}
+				else
+				{
+					std::cerr << "Invalid macro token" << std::endl;
+					return 1;
+				}
+
+				if (!template_stream.eof())
+				{
+					output_stream << token_char;
+				}
+			}
+			else if (macros.count(char_as_string))
+			{
+				output_stream << macros.at(char_as_string);
 			}
 			else
 			{
@@ -188,7 +214,9 @@ int replace_stream(std::istream& template_stream, std::ostream& output_stream, c
 	}
 }
 
-std::filesystem::path reparent_path(const std::filesystem::path& path, const std::filesystem::path& old_root, const std::filesystem::path& new_root)
+std::string replace_string(std::string& template_string, const macro_map_t& macros)
 {
-
+	std::ostringstream result;
+	replace_stream(std::istringstream(template_string), result, macros);
+	return result.str();
 }
