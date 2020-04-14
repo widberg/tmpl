@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 					return 1;
 				}
 
-				if (token.size() > 0 && std::isdigit(token[0]))
+				if (!token.empty() && std::isdigit(token[0]))
 				{
 					int arg_index = std::stoi(token) + 3;
 
@@ -107,11 +107,11 @@ int main(int argc, char* argv[])
 
 					output_file << argv[arg_index];
 				}
-				else if (token.size() > 0 && macros.count(token))
+				else if (!token.empty() && macros.count(token))
 				{
 					output_file << macros.at(token);
 				}
-				else if (token.size() > 0)
+				else if (!token.empty())
 				{
 					output_file << std::put_time(&tm, token.c_str());
 				}
@@ -124,6 +124,15 @@ int main(int argc, char* argv[])
 
 					return 1;
 				}
+			}
+			else
+			{
+				std::cerr << "Incomplete macro" << std::endl;
+
+				template_file.close();
+				output_file.close();
+
+				return 1;
 			}
 		}
 		else
