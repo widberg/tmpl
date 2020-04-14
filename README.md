@@ -23,10 +23,10 @@ Example: argument zero arg1 arg2 template.txt D:\programming\widberg\tmpl\build\
 ```
 
 ## Replacement Macros
-A replacement macro is denoted by a $ followed by a series of one or more digits, an individual alphabetical character, or a string of one or more alphanumeric characters enclosed in a pair of parentheses. The two types of replacement macro are listed bellow.
+A replacement macro is denoted by a $ followed by a series of one or more digits, an individual alphabetical character, or a string of one or more alphanumeric characters enclosed in a pair of parentheses. Replacement macros in the template file will be replaced with a coresponding value in the output file. File names and directory names will be evaluated for replacement macros as well. The two types of replacement macro are listed bellow.
 
 ### Indexes
-Any replacement macro beginning with a numerical digit will be interpreted as an index. Each index is replaced by the argument passed to tmpl in that possition following the output path. The fist argument following the output path is denoted by index 0.
+Any replacement macro beginning with a numerical digit will be interpreted as an index. Each index is replaced by the argument passed to tmpl in that possition following the output path. The fist argument following the output path is denoted by index 0. Following argument indexes sequentially increment by 1.
 
 ### Token
 Any replacement macro that matches a string bellow will be replaced with the described value. Tokens are case sensitive.
@@ -78,10 +78,11 @@ Any replacement macro that matches a string bellow will be replaced with the des
 | Y | Year | 2001 |
 | z | ISO 8601 offset from UTC in timezone (1 minute=1, 1 hour=100). If timezone cannot be determined, no characters | +100 |
 | Z | Timezone name or abbreviation. If timezone cannot be determined, no characters | CDT |
+
 <sub>Descriptions and examples for time replacement macros provided by [cplusplus.com](http://www.cplusplus.com/reference/ctime/strftime/)</sub>
 
 ### Escape Sequence
-A $ immediately followed by another $ will be replaced by a $.
+A $ immediately followed by another $ will be replaced with a $.
 
 ## Directory Mode
 If the template path is a directory, tmpl will recursively replace the names and contents of files and subdirectories at the output path.
