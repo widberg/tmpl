@@ -17,10 +17,10 @@ int main(int argc, char* argv[])
 	macro_map_t macros = {
 		{ "TEMPLATE_ARGUMENT", argv[1] },
 		{ "OUTPUT_ARGUMENT", argv[2] },
-		{ "TEMPLATE_DIRECTORY_ABSOLUTE", std::filesystem::absolute(template_path.parent_path()).string() },
-		{ "OUTPUT_DIRECTORY_ABSOLUTE", std::filesystem::absolute(output_path.parent_path()).string() },
-		{ "TEMPLATE_DIRECTORY_RELATIVE", std::filesystem::relative(template_path.parent_path()).string() },
-		{ "OUTPUT_DIRECTORY_RELATIVE", std::filesystem::relative(output_path.parent_path()).string() },
+		{ "TEMPLATE_DIRECTORY_ABSOLUTE", std::filesystem::absolute(template_path).parent_path().string() },
+		{ "OUTPUT_DIRECTORY_ABSOLUTE", std::filesystem::absolute(output_path).parent_path().string() },
+		{ "TEMPLATE_DIRECTORY_RELATIVE", std::filesystem::relative(template_path).parent_path().string() },
+		{ "OUTPUT_DIRECTORY_RELATIVE", std::filesystem::relative(output_path).parent_path().string() },
 		{ "WORKING_DIRECTORY", std::filesystem::current_path().string() },
 		{ "$", "$" } // Escape sequence
 	};
@@ -104,10 +104,10 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 
 	if (directory_mode)
 	{
-		macros["TEMPLATE_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(template_path.parent_path()).string();
-		macros["OUTPUT_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(new_output_path.parent_path()).string();
-		macros["TEMPLATE_DIRECTORY_RELATIVE"] = std::filesystem::relative(template_path.parent_path()).string();
-		macros["OUTPUT_DIRECTORY_RELATIVE"] = std::filesystem::relative(new_output_path.parent_path()).string();
+		macros["TEMPLATE_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(template_path).parent_path().string();
+		macros["OUTPUT_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(new_output_path).parent_path().string();
+		macros["TEMPLATE_DIRECTORY_RELATIVE"] = std::filesystem::relative(template_path).parent_path().string();
+		macros["OUTPUT_DIRECTORY_RELATIVE"] = std::filesystem::relative(new_output_path).parent_path().string();
 
 		std::filesystem::directory_iterator end_itr;
 		for (std::filesystem::directory_iterator itr(template_path); itr != end_itr; ++itr)
