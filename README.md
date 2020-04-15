@@ -35,14 +35,14 @@ Any replacement macro that matches a string bellow will be replaced with the des
 | --- | --- | --- |
 | TEMPLATE_ARGUMENT | The argument given as the template path |
 | OUTPUT_ARGUMENT | The argument given as the output path |
-| TEMPLATE_ABSOLUTE | The absolute path to the current template file |
-| OUTPUT_ABSOLUTE | The absolute path to the current output file |
-| TEMPLATE_RELATIVE | The relative path to the current template file |
-| OUTPUT_RELATIVE | The relative path to the current output file |
-| TEMPLATE_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current template file |
-| OUTPUT_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current output file |
-| TEMPLATE_DIRECTORY_RELATIVE | The relative path to the directory of the current template file |
-| OUTPUT_DIRECTORY_RELATIVE | The relative path to the directory of the current output file |
+| TEMPLATE_ABSOLUTE | The absolute path to the current template file after replacement |
+| OUTPUT_ABSOLUTE | The absolute path to the current output file after replacement |
+| TEMPLATE_RELATIVE | The relative path to the current template file after replacement |
+| OUTPUT_RELATIVE | The relative path to the current output file after replacement |
+| TEMPLATE_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current template file after replacement |
+| OUTPUT_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current output file after replacement |
+| TEMPLATE_DIRECTORY_RELATIVE | The relative path to the directory of the current template file after replacement |
+| OUTPUT_DIRECTORY_RELATIVE | The relative path to the directory of the current output file after replacement. |
 | WORKING_DIRECTORY | The absolute path to the directory tmpl was executed from |
 | a | Abbreviated weekday name | Thu |
 | A | Full weekday name | Thursday |
@@ -53,6 +53,7 @@ Any replacement macro that matches a string bellow will be replaced with the des
 | d | Day of the month, zero-padded (01-31)	| 23 |
 | D | Short MM/DD/YY date, equivalent to %m/%d/%y | 08/23/01 |
 | e | Day of the month, space-padded ( 1-31) | 23 |
+| E | Seconds since UNIX Epoch (00:00:00, 1 Jan 1970 UTC) | 1586909262 |
 | F | Short YYYY-MM-DD date, equivalent to %Y-%m-%d	| 2001-08-23 |
 | g | Week-based year, last two digits (00-99) | 01 |
 | G | Week-based year | 2001 |

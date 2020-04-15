@@ -17,6 +17,10 @@ int main(int argc, char* argv[])
 	macro_map_t macros = {
 		{ "TEMPLATE_ARGUMENT", argv[1] },
 		{ "OUTPUT_ARGUMENT", argv[2] },
+		{ "TEMPLATE_DIRECTORY_ABSOLUTE", std::filesystem::absolute(template_path.parent_path()).string() },
+		{ "OUTPUT_DIRECTORY_ABSOLUTE", std::filesystem::absolute(output_path.parent_path()).string() },
+		{ "TEMPLATE_DIRECTORY_RELATIVE", std::filesystem::relative(template_path.parent_path()).string() },
+		{ "OUTPUT_DIRECTORY_RELATIVE", std::filesystem::relative(output_path.parent_path()).string() },
 		{ "WORKING_DIRECTORY", std::filesystem::current_path().string() },
 		{ "$", "$" } // Escape sequence
 	};
@@ -31,17 +35,19 @@ int main(int argc, char* argv[])
 	const std::time_t t = std::time(nullptr);
 	const std::tm* time = std::localtime(&t);
 
+	macros.insert({ "E", std::to_string(t) });
+
 	const char time_format_specifiers[] = "aAbBcCdDeFgGhHIjmMprRSTuUVwWxXyYzZ";
 	const int time_format_specifiers_size = sizeof(time_format_specifiers) / sizeof(char);
 
-	std::string format_string("%_");
+	char format_string[] = "% ";
 	for (int i = 0; i < time_format_specifiers_size; i++)
 	{
 		char time_format_specifier = time_format_specifiers[i];
 		std::stringstream buffer;
 		format_string[1] = time_format_specifier;
-		buffer << std::put_time(time, format_string.c_str());
-		macros.insert(std::make_pair<std::string, std::string>(std::string(1, time_format_specifier), buffer.str()));
+		buffer << std::put_time(time, format_string);
+		macros.insert({ std::string(1, time_format_specifier), buffer.str() });
 	}
 
 	return replace(template_path, output_path, macros);
@@ -100,6 +106,11 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 
 	if (directory_mode)
 	{
+		macros["TEMPLATE_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(template_path.parent_path()).string();
+		macros["OUTPUT_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(output_path.parent_path()).string();
+		macros["TEMPLATE_DIRECTORY_RELATIVE"] = std::filesystem::relative(template_path.parent_path()).string();
+		macros["OUTPUT_DIRECTORY_RELATIVE"] = std::filesystem::relative(output_path.parent_path()).string();
+
 		std::filesystem::directory_iterator end_itr;
 		for (std::filesystem::directory_iterator itr(template_path); itr != end_itr; ++itr)
 		{
@@ -112,6 +123,11 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 	}
 	else
 	{
+		macros["TEMPLATE_ABSOLUTE"] = std::filesystem::absolute(template_path).string();
+		macros["OUTPUT_ABSOLUTE"] = std::filesystem::absolute(output_path).string();
+		macros["TEMPLATE_RELATIVE"] = std::filesystem::relative(template_path).string();
+		macros["OUTPUT_RELATIVE"] = std::filesystem::relative(output_path).string();
+
 		status = replace_stream(template_file, output_file, macros);
 
 		template_file.close();
@@ -131,8 +147,6 @@ int replace_stream(std::istream& template_stream, std::ostream& output_stream, c
 		{
 			char next_char;
 			template_stream.get(next_char);
-
-			std::string char_as_string(1, next_char);
 
 			if (next_char == '(')
 			{
@@ -197,14 +211,19 @@ int replace_stream(std::istream& template_stream, std::ostream& output_stream, c
 					output_stream << token_char;
 				}
 			}
-			else if (macros.count(char_as_string))
-			{
-				output_stream << macros.at(char_as_string);
-			}
 			else
 			{
-				std::cerr << "Incomplete macro" << std::endl;
-				return 1;
+				std::string char_as_string(1, next_char);
+
+				if (macros.count(char_as_string))
+				{
+					output_stream << macros.at(char_as_string);
+				}
+				else
+				{
+					std::cerr << "Incomplete macro" << std::endl;
+					return 1;
+				}
 			}
 		}
 		else

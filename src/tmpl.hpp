@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
