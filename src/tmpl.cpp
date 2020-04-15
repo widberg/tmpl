@@ -77,8 +77,6 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 		}
 	}
 
-	// replace on template path to get output path
-
 	// Output file
 
 	std::filesystem::path new_output_path(replace_string(output_path.string(), macros));
@@ -107,9 +105,9 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 	if (directory_mode)
 	{
 		macros["TEMPLATE_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(template_path.parent_path()).string();
-		macros["OUTPUT_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(output_path.parent_path()).string();
+		macros["OUTPUT_DIRECTORY_ABSOLUTE"] = std::filesystem::absolute(new_output_path.parent_path()).string();
 		macros["TEMPLATE_DIRECTORY_RELATIVE"] = std::filesystem::relative(template_path.parent_path()).string();
-		macros["OUTPUT_DIRECTORY_RELATIVE"] = std::filesystem::relative(output_path.parent_path()).string();
+		macros["OUTPUT_DIRECTORY_RELATIVE"] = std::filesystem::relative(new_output_path.parent_path()).string();
 
 		std::filesystem::directory_iterator end_itr;
 		for (std::filesystem::directory_iterator itr(template_path); itr != end_itr; ++itr)
@@ -124,9 +122,9 @@ int replace(const std::filesystem::path& template_path, const std::filesystem::p
 	else
 	{
 		macros["TEMPLATE_ABSOLUTE"] = std::filesystem::absolute(template_path).string();
-		macros["OUTPUT_ABSOLUTE"] = std::filesystem::absolute(output_path).string();
+		macros["OUTPUT_ABSOLUTE"] = std::filesystem::absolute(new_output_path).string();
 		macros["TEMPLATE_RELATIVE"] = std::filesystem::relative(template_path).string();
-		macros["OUTPUT_RELATIVE"] = std::filesystem::relative(output_path).string();
+		macros["OUTPUT_RELATIVE"] = std::filesystem::relative(new_output_path).string();
 
 		status = replace_stream(template_file, output_file, macros);
 

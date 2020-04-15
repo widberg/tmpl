@@ -19,7 +19,7 @@ Example: $0 $(1) $2 $(TEMPLATE_ARGUMENT) $(OUTPUT_ABSOLUTE) $c $Z $$ $($)
 
 outputarg1.txt
 ```plain_text
-Example: argument zero arg1 arg2 template.txt D:\programming\widberg\tmpl\build\output$1.txt 04/14/20 15:42:54 Eastern Daylight Time $ $
+Example: argument zero arg1 arg2 template.txt D:\programming\widberg\tmpl\build\outputarg1.txt 04/14/20 20:52:54 Eastern Daylight Time $ $
 ```
 
 ## Replacement Macros
