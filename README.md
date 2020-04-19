@@ -23,10 +23,10 @@ Example: argument zero arg1 arg2 template.txt D:\programming\widberg\tmpl\build\
 ```
 
 ## Replacement Macros
-A replacement macro is denoted by a $ followed by a series of one or more digits, an individual alphabetical character, or a string of one or more alphanumeric characters enclosed in a pair of parentheses. Replacement macros in the template file will be replaced with a coresponding value in the output file. File names and directory names will be evaluated for replacement macros as well. The two types of replacement macro are listed bellow.
+A replacement macro is denoted by a $ followed by a series of one or more digits, an individual alphabetical character, or a string of one or more alphanumeric characters enclosed in a pair of parentheses. Replacement macros in the template file will be replaced with a corresponding value in the output file. File names and directory names will be evaluated for replacement macros as well. The two types of replacement macro are listed bellow.
 
 ### Indexes
-Any replacement macro beginning with a numerical digit will be interpreted as an index. Each index is replaced by the argument passed to tmpl in that possition following the output path. The fist argument following the output path is denoted by index 0. Following argument indexes sequentially increment by 1.
+Any replacement macro beginning with a numerical digit will be interpreted as an index. Each index is replaced by the argument passed to tmpl in that position following the output path. The first argument following the output path is denoted by index 0. Following argument indexes sequentially increment by 1.
 
 ### Token
 Any replacement macro that matches a string bellow will be replaced with the described value. Tokens are case sensitive.
@@ -35,14 +35,14 @@ Any replacement macro that matches a string bellow will be replaced with the des
 | --- | --- | --- |
 | TEMPLATE_ARGUMENT | The argument given as the template path | template.txt |
 | OUTPUT_ARGUMENT | The argument given as the output path | output$1.txt |
-| TEMPLATE_ABSOLUTE | The absolute path to the current template file after replacement | D:\programming\widberg\tmpl\build\template.txt |
-| OUTPUT_ABSOLUTE | The absolute path to the current output file after replacement | D:\programming\widberg\tmpl\build\outputarg1.txt |
-| TEMPLATE_RELATIVE | The relative path to the current template file after replacement | template.txt |
-| OUTPUT_RELATIVE | The relative path to the current output file after replacement | outputarg1.txt |
-| TEMPLATE_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current template file after replacement | D:\programming\widberg\tmpl\build |
-| OUTPUT_DIRECTORY_ABSOLUTE | The absolute path to the directory of the current output file after replacement | D:\programming\widberg\tmpl\build |
-| TEMPLATE_DIRECTORY_RELATIVE | The relative path to the directory of the current template file after replacement |  |
-| OUTPUT_DIRECTORY_RELATIVE | The relative path to the directory of the current output file after replacement. |  |
+| TEMPLATE_ABSOLUTE<sup>‡</sup> | The absolute path to the current template file after replacement | D:\programming\widberg\tmpl\build\template.txt |
+| OUTPUT_ABSOLUTE<sup>‡</sup> | The absolute path to the current output file after replacement | D:\programming\widberg\tmpl\build\outputarg1.txt |
+| TEMPLATE_RELATIVE<sup>‡</sup> | The relative path to the current template file after replacement | template.txt |
+| OUTPUT_RELATIVE<sup>‡</sup> | The relative path to the current output file after replacement | outputarg1.txt |
+| TEMPLATE_DIRECTORY_ABSOLUTE<sup>‡</sup> | The absolute path to the directory of the current template file after replacement | D:\programming\widberg\tmpl\build |
+| OUTPUT_DIRECTORY_ABSOLUTE<sup>‡</sup> | The absolute path to the directory of the current output file after replacement | D:\programming\widberg\tmpl\build |
+| TEMPLATE_DIRECTORY_RELATIVE<sup>‡</sup> | The relative path to the directory of the current template file after replacement |  |
+| OUTPUT_DIRECTORY_RELATIVE<sup>‡</sup> | The relative path to the directory of the current output file after replacement. |  |
 | WORKING_DIRECTORY | The absolute path to the directory tmpl was executed from | D:\programming\widberg\tmpl\build |
 | a<sup>†</sup> | Abbreviated weekday name | Wed |
 | A<sup>†</sup> | Full weekday name | Wednesday |
@@ -79,14 +79,16 @@ Any replacement macro that matches a string bellow will be replaced with the des
 | Y<sup>†</sup> | Year | 2020 |
 | z<sup>†</sup> | ISO 8601 offset from UTC in timezone (1 minute=1, 1 hour=100). If timezone cannot be determined, no characters | -0400 |
 | Z<sup>†</sup> | Timezone name or abbreviation. If timezone cannot be determined, no characters | Eastern Daylight Time |
+| $ | Escape sequence. A $ immediately followed by another $ will be replaced with a $. | $ |
 
+‡<sub>Macro unavailable during filename replacement.</sub>
 †<sub>Description provided by [cplusplus.com](http://www.cplusplus.com/reference/ctime/strftime/).</sub>
-
-### Escape Sequence
-A $ immediately followed by another $ will be replaced with a $.
 
 ## Directory Mode
 If the template path is a directory, tmpl will recursively replace the names and contents of files and subdirectories at the output path.
+
+## Interactive Mode
+If the template path is `--stdin`, tmpl will use the input stream as the template file. If the output path is `--stdout`, tmpl will use the output stream as the output file. If either the template path or output path are stream arguments, the other must be a stream argument or file path. Directory mode is incompatible with interactive mode.
 
 ## Build Instructions
 
